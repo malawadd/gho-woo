@@ -8,6 +8,8 @@
  * License: GPL2
  * Text Domain: gho
  * Domain Path: /languages
+  * Update URI: https://ethglobal.com/showcase/gho-woo-vnqje
+* Plugin URI: https://ethglobal.com/showcase/gho-woo-vnqje
  *
  * @package Gho-Woo
  */
