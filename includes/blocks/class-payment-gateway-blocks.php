@@ -88,10 +88,29 @@ final class WC_cpmw_Gateway_Blocks_Support extends AbstractPaymentMethodType
     public function get_payment_method_data()
     {
  // Get plugin options
-
+$options = get_option('cpmw_settings');
 
 // Enqueue necessary styles
+wp_enqueue_style('cpmw_checkout', CPMW_URL . 'assets/css/checkout.css', array(), CPMW_VERSION);
 
+// Get user wallet settings
+$user_wallet = $options['user_wallet'];
+
+// Get currency options
+$bnb_currency = $options['bnb_select_currency'];
+$eth_currency = $options['eth_select_currency'];
+
+// Get currency conversion API options
+$compare_key = $options['crypto_compare_key'];
+$openex_key = $options['openexchangerates_key'];
+$select_currecny = $options['currency_conversion_api'];
+$const_msg = $this->cpmw_const_messages();
+
+// Get supported network names
+$network_name = $this->cpmw_supported_networks();
+
+// Get selected network
+$get_network = $options["Chain_network"];
 
 // Get constant messages
 

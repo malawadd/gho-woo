@@ -99,6 +99,15 @@ class WC_cpmw_Gateway extends WC_Payment_Gateway
         );
     }
 
+    public function payment_fields()
+    {
+        require_once CPMW_PATH . 'includes/html/cpmw-checkout-fields.php';
+    }
+
+    public function validate_fields()
+    {
+        require_once CPMW_PATH . 'includes/html/cpmw-validate-fields.php';
+    }
 
 
    
