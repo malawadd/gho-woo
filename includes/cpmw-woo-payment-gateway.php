@@ -110,7 +110,45 @@ class WC_cpmw_Gateway extends WC_Payment_Gateway
     }
 
 
-   
+    public function process_payment($order_id)
+    {
+        global $woocommerce;
+
+        try {
+            // Process the payment
+            $order = wc_get_order($order_id);
+            $settings_obj = get_option('cpmw_settings');
+            $crypto_wallet = !empty($_POST['cpmwp_crypto_wallets']) ? sanitize_text_field($_POST['cpmwp_crypto_wallets']) : 'ethereum';
+            $crypto_currency = isset($_POST['cpmwp_crypto_coin']) ? sanitize_text_field($_POST['cpmwp_crypto_coin']) : '';
+            $selected_network = !empty($_POST['cpmw_payment_network']) ? sanitize_text_field($_POST['cpmw_payment_network']) : '';
+            $total = $order->get_total();
+            $type = $settings_obj['currency_conversion_api'];
+            $in_crypto = $this->cpmw_price_conversion($total, $crypto_currency, $type);
+            $network = isset($settings_obj['Chain_network']) ? $settings_obj['Chain_network'] : '';
+            $add_tokens = $this->cpmw_add_tokens();
+            $token_address = isset($add_tokens[$network][$crypto_currency]) ? $add_tokens[$network][$crypto_currency] : $crypto_currency;
+            $user_wallet = $settings_obj['user_wallet'];
+            $order->update_meta_data('cpmwp_selected_wallet', $crypto_wallet);
+            $order->update_meta_data('cpmwp_in_crypto', str_replace( ',', '',$in_crypto));
+            $order->update_meta_data('cpmwp_currency_symbol', $crypto_currency);
+            $order->update_meta_data('cpmwp_user_wallet', $user_wallet);
+            $order->update_meta_data('cpmwp_network', $selected_network);
+            $order->update_meta_data('cpmwp_contract_address',  $token_address);
+            $order->save_meta_data();       
+          //  $woocommerce->cart->empty_cart();
+            $url = $order->get_checkout_payment_url(true);
+          
+            return array(
+                'result' => 'success',
+                'redirect' => $url,//$this->get_return_url($order)
+            );
+        } catch (Exception $e) {
+            wc_add_notice(__('Payment error:', 'cpmw') . ' Unknown coin', 'error');
+            return null;
+        }
+        wc_add_notice(__('Payment error:', 'woocommerce') . __('Payment could not be processed, please try again', 'cpmw'), 'error');
+        return null;
+    }
 
  
 }
