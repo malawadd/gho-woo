@@ -234,7 +234,27 @@ if (class_exists('CSF')):
     ));
     
 
-   
+    CSF::createSection($prefix, array(
+        'title' => 'Free Test Tokens',
+        'icon' => 'fas fa-rocket',
+        'fields' => array(
+            array(
+                'type' => 'heading',
+                'content' => 'Get Free Test Tokens to Test Payment via Metamask on Test Networks/Chains.',
+            ),
+            array(
+                'type' => 'subheading',
+                'content' => ' ETH Test Token For Sepolia Network: <a href="https://sepoliafaucet.com/" target="_blank">https://sepoliafaucet.com</a>',
+            ),
+            array(
+                'type' => 'subheading',
+                'content' => ' GHO Test Token For Sepolia Network: <a href="https://gho.aave.com/" target="_blank">https://gho.aave.com</a>',
+            ),
+          
+
+        ),
+
+    ));
    
 
 endif;
