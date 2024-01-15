@@ -95,7 +95,28 @@ class CpmwRestApi
 
     }
     // Canel or fail Order
-    
+    public static function set_order_failed($request)
+    {
+        $data = $request->get_json_params();
+        // Verify the nonce
+        $order_id = (int) sanitize_text_field($data['order_id']);
+        $nonce = isset($_POST['_wpnonce']) ? $_POST['_wpnonce'] : (isset($_SERVER['HTTP_X_WP_NONCE']) ? $_SERVER['HTTP_X_WP_NONCE'] : '');
+
+        if (!wp_verify_nonce($nonce, 'wp_rest')) {
+            wp_send_json_error('Nonce verification failed');
+
+        }
+        $canceled = sanitize_text_field($data['canceled']);
+        $message = __('Payment has been failed due to user rejection', 'cpmw');
+
+        $order = new WC_Order($order_id);
+        $order->update_status('wc-failed', $message);
+        $checkout_page = wc_get_checkout_url();
+
+        $order->save_meta_data();
+        return new WP_REST_Response(array('error' => $message, 'url' => $canceled ? $checkout_page : ''), 400);
+
+    }
 
     // On successfull payment handle order status & save transaction in database
    

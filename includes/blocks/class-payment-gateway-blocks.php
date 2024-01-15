@@ -117,7 +117,31 @@ $get_network = $options["Chain_network"];
 
 
 // Determine crypto currency based on network
-
+$crypto_currency = ($get_network == '0x1' || $get_network == '0x5' || $get_network == '0xaa36a7') ?
+$options["eth_select_currency"] : $options["bnb_select_currency"];
+$select_currency_lbl = (isset($options['select_a_currency']) && !empty($options['select_a_currency'])) ? $options['select_a_currency'] : __('Please Select a Currency', 'cpmwp');
+// Get type and total price
+$type = $options['currency_conversion_api'];
+$logo_url =CPMW_URL . 'assets/images/metamask.png';
+$total_price =  isset(WC()->cart->subtotal)?WC()->cart->subtotal:null;
+$enabledCurrency = array();
+$error = '';
+if (is_array($crypto_currency)) {
+    foreach ($crypto_currency as $key => $value) {
+        // Get coin logo image URL
+        $image_url = $this->cpmw_get_coin_logo($value);
+        // Perform price conversion
+        $in_crypto = $this->cpmw_price_conversion($total_price, $value, $type);       
+        if (isset($in_crypto['restricted'])) {
+            $error = $in_crypto['restricted'];
+            break; // Exit the loop if the API is restricted.
+        }
+        if(isset($in_crypto['error'])) {
+            $error = $in_crypto['error'];
+            break; // Exit the loop if the API is restricted.
+        }
+        $enabledCurrency[$value] = array('symbol' => $value, 'price' => $in_crypto, 'url' => $image_url);
+    }}
 
        
     }
