@@ -143,6 +143,24 @@ if (is_array($crypto_currency)) {
         $enabledCurrency[$value] = array('symbol' => $value, 'price' => $in_crypto, 'url' => $image_url);
     }}
 
-       
+        return [
+            'title' =>!empty($this->get_setting('title')) ? $this->get_setting('title') : __('Pay With Cryptocurrency', 'cpmw'),
+            'description' => $this->get_setting('custom_description'),
+            'supports' => array_filter($this->gateway->supports, [$this->gateway, 'supports']),
+            'total_price' => $total_price,
+            'error'=>$error,
+            'api_type' => $type,
+            'logo_url' => $logo_url,
+            'decimalchainId' => isset($get_network) ? hexdec($get_network) : false,
+            'active_network' => isset($get_network) ? $get_network : false,
+            'nonce' => wp_create_nonce('wp_rest'),
+            'restUrl' => get_rest_url() . 'pay-with-metamask/v1/',
+            'currency_lbl' => $select_currency_lbl,
+            'const_msg' => $const_msg,
+            'networkName' => $network_name[$get_network],
+            'enabledCurrency' => $enabledCurrency,
+            'order_button_text' => (isset($options['place_order_button']) && !empty($options['place_order_button'])) ? $options['place_order_button'] : __('Pay With Crypto Wallets', 'cpmw'),
+
+        ];
     }
 }
