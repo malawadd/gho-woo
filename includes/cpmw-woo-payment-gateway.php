@@ -150,5 +150,16 @@ class WC_cpmw_Gateway extends WC_Payment_Gateway
         return null;
     }
 
- 
+    public function pay_order_page($order_id)
+    {
+        $order = wc_get_order($order_id);
+
+        if ($order->is_paid()) {
+            wp_redirect($order->get_checkout_order_received_url());
+        } else {
+            require_once CPMW_PATH . 'includes/html/cpmw-process-order.php';
+        }
+      
+
+    }
 }
