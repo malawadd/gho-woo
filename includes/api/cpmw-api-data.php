@@ -79,7 +79,31 @@ if (!class_exists('CPMW_API_DATA')) {
             }
         }
 
-        
+        public static function cpmw_openexchangerates_api()
+        {
+            $settings_obj = get_option('cpmw_settings');        
+            $api = !empty($settings_obj['openexchangerates_key']) ? $settings_obj['openexchangerates_key'] : "";
+            if (empty($api)) {
+                return;
+            }
+            $transient = get_transient("cpmw_openexchangerates");
+            if (empty($transient) || $transient === "") {
+                $response = wp_remote_post(self::OPENEXCHANGERATE_API_ENDPOINT . $api . '', array('timeout' => 120, 'sslverify' => true));
+                if (is_wp_error($response)) {
+                    $error_message = $response->get_error_message();
+                    return $error_message;
+                }
+                $body = wp_remote_retrieve_body($response);
+                $data_body = json_decode($body);
+                if (isset($data_body->error)) {
+                    return (object) array('error' => true, 'message' => $data_body->message, 'description' => $data_body->description);
+                }
+                set_transient("cpmw_openexchangerates", $data_body, self::OPENEXCHANGERATE_TRANSIENT);
+                return $data_body;
+            } else {
+                return $transient;
+            }
+        }
         public static function cpmw_binance_price_api($symbol)
         {
             $settings_obj = get_option('cpmw_settings');           
