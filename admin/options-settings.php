@@ -167,7 +167,68 @@ if (class_exists('CSF')):
                 'desc' => __('Customize the text displayed by the plugin on the frontend.', 'cpmw'),
                 'default' => 'place_order_button',
             ),
-           
+            array(
+                'id' => 'confirm_msg',
+                'title' => esc_html__('Payment Confirmation (Popup)', 'cpmw'),
+                'type' => 'text',
+                'dependency' => array('dynamic_messages', '==', 'confirm_msg'),
+                'desc' => 'You can change it to your preferred text or leave it blank to keep the default text.',
+                'placeholder' => __('Confirm Payment Inside Your Wallet!', 'cpmw'),
+            ),
+            array(
+                'id' => 'payment_process_msg',
+                'title' => esc_html__('Payment Processing (Popup)', 'cpmw'),
+                'type' => 'text',
+                'dependency' => array('dynamic_messages', '==', 'payment_process_msg'),
+                'desc' => 'Custom message to show  while processing payment via blockchain.',
+                'placeholder' => __('Payment in process.', 'cpmw'),
+            ),
+            array(
+                'id' => 'rejected_message',
+                'title' => esc_html__('Payment Rejected (Popup)', 'cpmw'),
+                'type' => 'text',
+                'dependency' => array('dynamic_messages', '==', 'rejected_message'),
+                'desc' => 'Custom message to show  if you rejected payment via metamask.',
+                'placeholder' => __('Transaction rejected. ', 'cpmw'),
+            ),
+            array(
+                'id' => 'payment_msg',
+                'title' => esc_html__('Payment Completed (Popup)', 'cpmw'),
+                'type' => 'text',
+                'dependency' => array('dynamic_messages', '==', 'payment_msg'),
+                'placeholder' => __('Payment completed successfully.', 'cpmw'),
+                'desc' => 'Custom message to show  if  payment confirm  by blockchain.',
+
+            ),
+            array(
+                'id' => 'place_order_button',
+                'title' => esc_html__('Place Order Button (Checkout page)', 'cpmw'),
+                'type' => 'text',
+                'dependency' => array('dynamic_messages', '==', 'place_order_button'),
+                'placeholder' => __('Pay With gho-woo', 'cpmw'),
+                'desc' => 'Please specify a name for the "Place Order" button on the checkout page.',
+
+            ),
+            array(
+                'id' => 'select_a_currency',
+                'title' => esc_html__('Select Coin (Checkout page)', 'cpmw'),
+                'type' => 'text',
+                'dependency' => array('dynamic_messages', '==', 'select_a_currency'),
+                'placeholder' => __('Please Select a Currency', 'cpmw'),
+                'desc' => 'Please provide a name for the label that selects the currency on the checkout page.',
+
+            ),
+            array(
+                'id' => 'enable_debug_log',
+                'title' => esc_html__('Debug mode ', 'cpmw'),
+                'type' => 'switcher',
+                'text_on' => 'Enable',
+                'text_off' => 'Disable',
+                'text_width' => 80,
+                'desc' => 'When enabled, payment error logs will be saved to WooCommerce > Status > <a href="' . esc_url(get_admin_url(null, "admin.php?page=wc-status&tab=logs")) . '">Logs.</a>',
+                'help' => esc_html__('Enable debug mode', 'cpmwp'),
+                'default' => true,
+            ),
 
         ),
     ));
