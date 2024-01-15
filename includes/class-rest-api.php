@@ -78,7 +78,22 @@ class CpmwRestApi
     }
 
     // Get network on selected coin base
-   
+    public function get_selected_network($request)
+    {
+        $data = $request->get_json_params();
+        // Verify the nonce
+        $nonce = isset($_POST['_wpnonce']) ? $_POST['_wpnonce'] : (isset($_SERVER['HTTP_X_WP_NONCE']) ? $_SERVER['HTTP_X_WP_NONCE'] : '');
+
+        if (!wp_verify_nonce($nonce, 'wp_rest')) {
+            wp_send_json_error('Nonce verification failed');
+
+        }
+        $symbol = !empty($data['symbol']) ? sanitize_text_field($data['symbol']) : '';
+
+        $network_array = $this->cpmwp_get_active_networks_for_currency($symbol);
+        return new WP_REST_Response($network_array);
+
+    }
     // Canel or fail Order
     
 
