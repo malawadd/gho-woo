@@ -179,6 +179,27 @@ class Cpmw_metamask_list extends WP_List_Table
         return $sortable_columns;
     }
 
-    
+    public function timeAgo($order)
+    {       
+        $order_date = $order->get_date_created();
+        $time_ago = $order_date->getTimestamp();
+        $time_difference = time() -$time_ago;
+
+        if ($time_difference < 60) {
+            return $time_difference.' seconds ago';
+        } elseif ($time_difference >= 60 && $time_difference < 3600) {
+            $minutes = round($time_difference / 60);
+            return ($minutes == 1) ? '1 minute' : $minutes . ' minutes ago';
+        } elseif ($time_difference >= 3600 && $time_difference < 86400) {
+            $hours = round($time_difference / 3600);
+            return ($hours == 1) ? '1 hour ago' : $hours . ' hours ago';
+        } elseif ($time_difference >= 86400) {
+            if (round($time_difference / 86400) == 1) {
+                return date_i18n('M j, Y', $time_ago);
+            } else {
+                return date_i18n('M j, Y', $time_ago);
+            }
+        }
+    }
 
 }
