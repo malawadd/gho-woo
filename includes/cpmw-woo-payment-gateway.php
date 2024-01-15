@@ -74,7 +74,30 @@ class WC_cpmw_Gateway extends WC_Payment_Gateway
         return false;
     }
 
-   
+    public function init_form_fields()
+    {
+        $this->form_fields = array(
+            'enabled' => array(
+                'title' => 'Enable/Disable',
+                'label' => 'Enable MetaMask Pay',
+                'type' => 'checkbox',
+                'description' => '',
+                'default' => 'yes',
+            ),
+            'title' => array(
+                'title' => __('Title', 'cpmw'),
+                'type' => 'text',
+                'description' => __('This controls the title for the payment method the customer sees during checkout.', 'cpmw'),
+                'default' => __('Pay With Cryptocurrency','cpmw'),
+                'desc_tip' => false,
+            ),
+            'custom_description' => array(
+                'title' => 'Description',
+                'type' => 'text',
+                'description' => 'Add custom description for checkout payment page',                
+            ),
+        );
+    }
 
 
 

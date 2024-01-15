@@ -52,7 +52,32 @@ final class WC_cpmw_Gateway_Blocks_Support extends AbstractPaymentMethodType
      */
     public function get_payment_method_script_handles()
     {
-        
+        $filePaths = glob(CPMW_PATH . '/assets/pay-with-metamask/build/block' . '/*.php');
+        $fileName = pathinfo($filePaths[0], PATHINFO_FILENAME);
+        $jsbuildUrl = str_replace('.asset', '', $fileName);
+        $script_path = 'assets/pay-with-metamask/build/block/' . $jsbuildUrl . '.js';
+        $script_asset_path = CPMW_PATH . 'assets/pay-with-metamask/build/block/' . $jsbuildUrl . '.asset.php';
+        $script_asset = file_exists($script_asset_path)
+        ? require $script_asset_path
+        : array(
+            'dependencies' => array(),
+            'version' => CPMW_VERSION,
+        );
+        $script_url = CPMW_URL . $script_path;
+
+        wp_register_script(
+            'wc-cpmw-payments-blocks',
+            $script_url,
+            $script_asset['dependencies'],
+            $script_asset['version'],
+            true
+        );
+        wp_enqueue_style('cpmw-checkout', CPMW_URL . 'assets/css/checkout.css', null, CPMW_VERSION);
+        if (function_exists('wp_set_script_translations')) {
+            wp_set_script_translations('wc-cpmw-payments-blocks', 'woocommerce-gateway-cpmw', CPMW_PATH . 'languages/');
+        }
+
+        return ['wc-cpmw-payments-blocks'];
     }
 
     /**
