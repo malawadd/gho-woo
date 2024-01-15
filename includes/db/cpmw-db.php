@@ -216,5 +216,40 @@ class CPMW_database
      * @access  public
      * @since   1.0
      */
-    
+    public function create_table()
+    {
+
+        global $wpdb;
+
+        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+
+        //IF NOT EXISTS - condition not required
+
+        $sql = "CREATE TABLE IF NOT EXISTS " . $this->table_name . " (
+		id bigint(20) NOT NULL AUTO_INCREMENT,
+        order_id bigint(20) NOT NULL ,
+        chain_id longtext NOT NULL,
+		order_price longtext NOT NULL,
+        user_name longtext NOT NULL,
+		crypto_price longtext NOT NULL,
+        selected_currency longtext NOT NULL,
+        chain_name longtext NOT NULL,
+        status longtext NOT NULL,
+        sender longtext NOT NULL,
+        transaction_id varchar(250) NOT NULL UNIQUE,
+		last_updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+		PRIMARY KEY (id)
+	    ) CHARACTER SET utf8 COLLATE utf8_general_ci;";
+
+        //$wpdb->query($sql);
+        dbDelta($sql);
+
+        update_option($this->table_name . '_db_version', $this->version);
+    }
+
+    public function drop_table()
+    {
+        global $wpdb;
+        $wpdb->query('DROP TABLE IF EXISTS ' . $this->table_name);
+    }
 }
