@@ -98,7 +98,75 @@ if (class_exists('CSF')):
                 'default' => 'GHO',
 
             ),
-            
+            array(
+                'id' => 'bnb_select_currency',
+                'title' => __('Select Crypto Currency <span style="color:red">(Required )</span>', 'cpmw'),
+                'type' => 'select',
+                'placeholder' => 'Select Crypto Currency',
+                'validate' => 'csf_validate_required',
+                'options' => array(
+                    'BNB' => __('Binance Coin', 'cpmw'),
+                    'BUSD' => __('BUSD', 'cpmw'),
+                ),
+                'chosen' => true,
+                'multiple' => true,
+                'settings' => array('width' => '50%'),
+                'dependency' => array('Chain_network', 'any', '0x38,0x61'),
+                'desc' => '',
+                'default' => 'BNB',
+            ),
+            array(
+                'id' => 'enable_refund',
+                'title' => esc_html__('Enable Refund', 'cpmw'),
+                'type' => 'switcher',
+                'text_on' => 'Enable',
+                'text_off' => 'Disable',
+                'text_width' => 80,
+                'desc' => '',
+                'help' => esc_html__('Enable refund option', 'cpmw'),
+                'default' => true,
+            ),
+
+            array(
+                'id' => 'payment_status',
+                'title' => esc_html__('Payment Success: Order Status', 'cpmw'),
+                'type' => 'select',
+                'options' => apply_filters(
+                    'cpmwp_settings_order_statuses',
+                    array(
+                        'default' => __('Woocommerce Default Status', 'cpmw'),
+                        'on-hold' => __('On Hold', 'cpmw'),
+                        'processing' => __('Processing', 'cpmw'),
+                        'completed' => __('Completed', 'cpmw'),
+                    )
+                ),
+                'desc' => __('Order status upon successful cryptocurrency payment.', 'cpmw'),
+                'default' => 'default',
+            ),
+
+            array(
+                'id' => 'redirect_page',
+                'title' => esc_html__('Payment Success: Redirect Page', 'cpmw'),
+                'type' => 'text',
+                'placeholder' => 'https://ethglobal.com/events/lfgho',
+                'desc' => 'Enter custom url to redirect or leave blank to update order status on same page.',
+            ),
+            array(
+                'id' => 'dynamic_messages',
+                'title' => esc_html__('Customize Text Display', 'cpmw'),
+                'type' => 'select',
+                'options' => array(
+                    'confirm_msg' => __('Payment Confirmation (Popup)', 'cpmw'),
+                    'payment_process_msg' => __('Payment Processing (Popup)', 'cpmw'),
+                    'rejected_message' => __('Payment Rejected (Popup)', 'cpmw'),
+                    'payment_msg' => __('Payment Completed (Popup)', 'cpmw'),
+                    'place_order_button' => __('Place Order Button (Checkout page)', 'cpmw'),
+                    'select_a_currency' => __('Select Coin (Checkout page)', 'cpmw'),
+                ),
+
+                'desc' => __('Customize the text displayed by the plugin on the frontend.', 'cpmw'),
+                'default' => 'place_order_button',
+            ),
            
 
         ),
