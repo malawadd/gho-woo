@@ -80,7 +80,35 @@ if (!class_exists('CPMW_API_DATA')) {
         }
 
         
-        
+        public static function cpmw_binance_price_api($symbol)
+        {
+            $settings_obj = get_option('cpmw_settings');           
+            $trans_name = "cpmw_binance_price_". $symbol;
+            $transient = get_transient($trans_name);
+            if (empty($transient) || $transient === "") {              
+                $response = wp_remote_get(self::BINANCE_API_COM. $symbol . '', array('timeout' => 120, 'sslverify' => true));
+                if (is_wp_error($response)) {
+                    $error_message = $response->get_error_message();
+                    return $error_message;
+                }
+                $body = wp_remote_retrieve_body($response);
+                $data_body = json_decode($body);
+                if(isset($data_body->msg)){
+                    $response = wp_remote_get(self::BINANCE_API_US . $symbol . '', array('timeout' => 120, 'sslverify' => true));
+                    if (is_wp_error($response)) {
+                        $error_message = $response->get_error_message();
+                        return $error_message;
+                    }
+                    $body = wp_remote_retrieve_body($response);
+                    $data_body = json_decode($body);
+
+                }
+                set_transient($trans_name, $data_body, self::BINANCE_TRANSIENT);
+                return $data_body;
+            } else {
+                return $transient;
+            }
+        }
 
     }
 }
