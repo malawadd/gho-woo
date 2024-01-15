@@ -38,7 +38,44 @@ class CpmwRestApi
 
     }
     // Get network on selected coin base
+    public function update_price($request)
+    {
+        $data = $request->get_json_params();
+        // Verify the nonce
+        $nonce = isset($_POST['_wpnonce']) ? $_POST['_wpnonce'] : (isset($_SERVER['HTTP_X_WP_NONCE']) ? $_SERVER['HTTP_X_WP_NONCE'] : '');
 
+        if (!wp_verify_nonce($nonce, 'wp_rest')) {
+            wp_send_json_error('Nonce verification failed');
+
+        }
+        $options = get_option('cpmw_settings');
+        $type = $options['currency_conversion_api'];
+        // Get selected network
+        $get_network = $options["Chain_network"];
+        $crypto_currency = ($get_network == '0x1' || $get_network == '0x5' || $get_network == '0xaa36a7') ?
+        $options["eth_select_currency"] : $options["bnb_select_currency"];
+        $total_price = !empty($data['total_amount']) ? sanitize_text_field($data['total_amount']) : '';
+        $enabledCurrency = array();
+        $error = '';
+        if (is_array($crypto_currency)) {
+            foreach ($crypto_currency as $key => $value) {
+                // Get coin logo image URL
+                $image_url = $this->cpmw_get_coin_logo($value);
+                // Perform price conversion
+                $in_crypto = $this->cpmw_price_conversion($total_price, $value, $type);
+                if (isset($in_crypto['restricted'])) {
+                    $error = $in_crypto['restricted'];
+                    break; // Exit the loop if the API is restricted.
+                }
+                if (isset($in_crypto['error'])) {
+                    $error = $in_crypto['error'];
+                    break; // Exit the loop if the API is restricted.
+                }
+                $enabledCurrency[$value] = array('symbol' => $value, 'price' => $in_crypto, 'url' => $image_url);
+            }}
+        return new WP_REST_Response($enabledCurrency);
+
+    }
 
     // Get network on selected coin base
    
