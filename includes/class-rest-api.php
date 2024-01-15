@@ -275,7 +275,121 @@ class CpmwRestApi
 
     }
     // validate and save transation info inside transaction table and order
-   
+    public function save_transaction_handler($request)
+    {
+        global $woocommerce;
+        $data = $request->get_json_params();
+        $order_id = (int) sanitize_text_field($data['order_id']);
+        $nonce = isset($_POST['_wpnonce']) ? $_POST['_wpnonce'] : (isset($_SERVER['HTTP_X_WP_NONCE']) ? $_SERVER['HTTP_X_WP_NONCE'] : '');
+        if (!wp_verify_nonce($nonce, 'wp_rest')) {
+            $error_message = __('Nonce verification failed.', 'cpmw');
+            $log_entry = "[Order #$order_id] [FAILURE] " . $error_message . PHP_EOL;
+            $this->cpmwsaveErrorLogs($log_entry);
+            return new WP_REST_Response(array('error' => $error_message), 400);
+
+        }
+
+        $amount = sanitize_text_field($data['amount']);
+        $amount = $this->cpmw_format_number($amount);
+        $receiver = sanitize_text_field($data['receiver']);
+        $signature = sanitize_text_field($data['signature']);
+        $sender = !empty($data['sender']) ? sanitize_text_field($data['sender']) : '';
+        $token_address = sanitize_text_field($data['token_address']);
+        // $verifyRequest = stripslashes($tx_req_data);
+        $tx_data_arr = json_decode($verifyRequest, true); // Decode JSON to associative array
+        $order = new WC_Order($order_id);
+        $order->add_meta_data('transactionverification', sanitize_text_field($data['transaction_id']));
+        $order->save_meta_data();
+        $selected_network = $order->get_meta('cpmwp_network');
+        $secret_key = $this->cpmw_get_secret_key();
+        $create_tx_req_data = json_encode(
+            array(
+                'order_id' => $order_id,
+                'selected_network' => $selected_network,
+                'receiver' => strtoupper($receiver),
+                'amount' => str_replace(',', '', $amount),
+                'token_address' => strtoupper($token_address),
+            )
+        );
+        $get_sign = hash_hmac('sha256', $create_tx_req_data, $secret_key);
+        $saved_amount = $order->get_meta('cpmwp_in_crypto');
+        // Verify signature
+        if ($get_sign !== $signature) {
+            $original_data = json_encode(
+                array(
+                    'order_id' => $order_id,
+                    'selected_network' => $selected_network,
+                    'receiver' => strtoupper($order->get_meta('cpmwp_user_wallet')),
+                    'amount' => $saved_amount,
+                    'token_address' => strtoupper($order->get_meta('cpmwp_contract_address')),
+                )
+            );
+            $order->update_status('wc-failed', __('Order has been canceled due to Order Information mismatch', 'cpmw'));
+            $error_message = __('Signature verification failed', 'cpmw');
+            $log_entry = "[Order #$order_id] [FAILURE] [Original data]:-" . $original_data . '[Received data]:-' . $create_tx_req_data . $error_message . PHP_EOL;
+            $this->cpmwsaveErrorLogs($log_entry);
+            return new WP_REST_Response(array('error' => $error_message), 400);
+        }
+
+        // if (is_array($tx_data_arr)) {
+
+        $tx_db_id = $order->get_meta('transaction_id');
+        if (!empty($tx_db_id)) {
+            $order->update_status('wc-failed', __('Order canceled: Transaction already exists.', 'cpmw'));
+            $error_message = __('Order canceled: Transaction already exists..', 'cpmw');
+            $log_entry = "[Order #$order_id] [FAILURE] " . $error_message . PHP_EOL;
+            $this->cpmwsaveErrorLogs($log_entry);
+            return new WP_REST_Response(array('error' => $error_message), 400);
+        }
+
+        $saved_receiver = $order->get_meta('cpmwp_user_wallet');
+        $nonce = !empty($data['nonce']) ? sanitize_text_field($data['nonce']) : '';
+        $trasn_id = !empty($data['transaction_id']) ? sanitize_text_field($data['transaction_id']) : '';
+
+        $block_explorer = $this->cpmw_get_explorer_url();
+
+        $networks = $this->cpmw_supported_networks();
+        $transaction = array();
+        $current_user = wp_get_current_user();
+        $user_name = $current_user->user_firstname . ' ' . $current_user->user_lastname;
+        $order->update_meta_data('transaction_id', $trasn_id);
+        $saved_token_address = $order->get_meta('cpmwp_contract_address');
+        $db_currency_symbol = $order->get_meta('cpmwp_currency_symbol');
+        $transaction['order_id'] = $order_id;
+        $transaction['chain_id'] = $selected_network;
+        $transaction['order_price'] = get_woocommerce_currency_symbol() . $order->get_total();
+        $transaction['user_name'] = $user_name;
+        $transaction['crypto_price'] = $order->get_meta('cpmwp_in_crypto') . ' ' . $db_currency_symbol;
+        $transaction['selected_currency'] = $db_currency_symbol;
+        $transaction['chain_name'] = $networks[$selected_network];
+        $transaction['status'] = 'awaiting';
+        $transaction['sender'] = $sender;
+        $transaction['transaction_id'] = !empty($trasn_id) ? $trasn_id : 'false';
+        $order->save_meta_data();
+        $db = new CPMW_database();
+
+        $pass_tx_req_data = json_encode(
+            array(
+                'order_id' => $order_id,
+                'selected_network' => $selected_network,
+                'receiver' => strtoupper($saved_receiver),
+                'amount' => str_replace(',', '', $saved_amount),
+                'token_address' => strtoupper($saved_token_address),
+                'tx_id' => $trasn_id,
+            )
+        );
+        $signature = hash_hmac('sha256', $pass_tx_req_data, $secret_key);
+        $db->cpmw_insert_data($transaction);
+        // save transation
+        $data = array(
+            'nonce' => wp_create_nonce('wp_rest'),
+            'signature' => $signature,
+            'order_id' => $order_id,
+        );
+        return new WP_REST_Response($data);
+        // }
+        die();
+    }
 
 }
 
