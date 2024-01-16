@@ -121,7 +121,25 @@ function cpmw_payment_verify()
     
 
 
-    
+     function cpmw_binance_price_api($symbol)
+    {       
+        $trans_name="cpmw_binance_price".$symbol;
+        $transient = get_transient($trans_name);
+        if (empty($transient) || $transient === "") {
+            $response = wp_remote_get('https://api.binance.com/api/v3/ticker/24hr?symbol='.$symbol.'', array('timeout' => 120,'sslverify' => true));           
+            if (is_wp_error($response)) {
+                $error_message = $response->get_error_message();
+                return $error_message;
+            }
+            $body = wp_remote_retrieve_body($response);
+            $data_body = json_decode($body);
+            set_transient($trans_name, $data_body, 10 * MINUTE_IN_SECONDS);
+            return $data_body;
+        } else {
+            return $transient;
+        }
+    }
+
 //Price conversion API end here
 
    function cpmw_supported_currency(){
