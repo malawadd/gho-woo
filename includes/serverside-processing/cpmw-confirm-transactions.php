@@ -153,6 +153,29 @@ if (!class_exists('CPMW_CONFIRM_TRANSACTION')) {
         }
 
        
-        
+        //Cancel Order
+        public static function cpmw_cancel_order()
+        {
+            // Verify nonce
+            $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
+            $order_id = isset($_POST['order_id']) ? intval($_POST['order_id']) : 0;
+
+            if (!wp_verify_nonce($nonce, 'cpmw_metamask_pay' . $order_id)) {
+                wp_send_json_error('Nonce verification failed');
+            }
+
+            // Update order status
+            $message = __('Order has been canceled due to user rejection', 'cpmw');
+            $order = wc_get_order($order_id);
+
+            if ($order && is_a($order, 'WC_Order')) {
+                $order->update_status('wc-cancelled', $message);
+                $order->save();
+                wp_send_json_error($message);
+            } else {
+                wp_send_json_error('Invalid order ID');
+            }
+        }
+
     }
 }
