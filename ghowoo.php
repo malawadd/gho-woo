@@ -130,7 +130,20 @@ if (!class_exists('cpmw_metamask_pay')) {
                 add_action('admin_notices', array($this, 'cpmw_missing_wc_notice'));
                 return;
             }
-           
+            /*** Include helpers functions*/
+            require_once CPMW_PATH . 'includes/api/cpmw-api-data.php';
+            require_once CPMW_PATH . 'includes/helper/cpmw-helper-functions.php';
+            require_once CPMW_PATH . 'includes/cpmw-woo-payment-gateway.php';
+            require_once CPMW_PATH . 'includes/db/cpmw-db.php';
+            require_once CPMW_PATH . 'includes/class-rest-api.php';
+            if (is_admin()) {
+                require_once CPMW_PATH . 'admin/table/cpmw-transaction-table.php';
+                require_once CPMW_PATH . 'admin/table/cpmw-list-table.php';
+                require_once CPMW_PATH . 'admin/feedback/admin-feedback-form.php';
+                require_once CPMW_PATH . 'admin/class.review-notice.php';
+                require_once CPMW_PATH . 'admin/codestar-framework/codestar-framework.php';
+                require_once CPMW_PATH . 'admin/options-settings.php';
+            }
 
         }
         public function cpmw_installation_date()
