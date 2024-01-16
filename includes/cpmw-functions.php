@@ -118,7 +118,63 @@ function cpmw_payment_verify()
     }
     } 
 
-    
+    //Price conversion API start
+
+ function cpmw_price_conversion($total,$crypto,$type)
+    {
+        global $woocommerce;
+        $lastprice="";
+        $currency = get_woocommerce_currency();
+        $settings_obj = get_option('woocommerce_cpmw_settings');
+
+        if($type=="cryptocompare"){            
+            $api = !empty($settings_obj['crypto_compare_key']) ? $settings_obj['crypto_compare_key'] : "";
+            if(empty($api)){
+            return "no_key";
+            }
+            $current_price = cpmw_crypto_compare_api($currency, $crypto);
+            $current_price_array=(array)$current_price;
+            
+
+            if(isset($current_price_array['Response'])){
+                return ;
+            }
+            
+            $in_crypto = !empty(($current_price_array[$crypto]) * $total) ? ($current_price_array[$crypto]) * $total : "";
+            return cpmw_format_number($in_crypto);
+            
+        }
+        else{        
+        $price_list=cpmw_openexchangerates_api();                           
+        if(isset($price_list->error)){
+             return 'error';
+        }
+
+        $price_arryay=(array)$price_list->rates;
+        $current_rate=$price_arryay[$currency];
+      if($crypto=="USDT"){
+        $current_price_USDT = cpmw_crypto_compare_api($currency, $crypto);
+        $current_price_array_USDT=(array)$current_price_USDT;
+        if(isset($current_price_array_USDT['Response'])){
+            return ;
+        }            
+        $in_crypto_USDT = !empty(($current_price_array_USDT[$crypto]) * $total) ? ($current_price_array_USDT[$crypto]) * $total : "";
+        return $in_crypto_USDT;
+      } else {
+        if ($crypto == "GHO") {
+            // Use the fixed rate for GHO conversion
+            $fixedRate = 0.980754;
+            $in_crypto_GHO = $total / $fixedRate;
+            return cpmw_format_number($in_crypto_GHO);
+        }
+      else {
+        $binance_price=cpmw_binance_price_api(''.$crypto.'USDT');               
+        $lastprice=$binance_price->lastPrice;
+        $cal=(!empty($price_arryay) && !empty($current_rate) )?($total/$current_rate)/$lastprice:"";
+        return  cpmw_format_number($cal);
+      }       
+    }
+    }
 
     function cpmw_crypto_compare_api($fiat, $crypto_token)
     {   
