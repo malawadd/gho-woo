@@ -138,7 +138,25 @@ trait CPMW_HELPER
         return $networks;
 
     }
-   
+    protected function cpmwp_get_active_networks_for_currency($currencySymbol)
+    {
+        $options = get_option('cpmw_settings');
+        $activeNetworks = array();
+        $decimalactiveNetworks = array();
+        $contract_address = [];
+        $get_network = $options["Chain_network"];
+        $allnetworks = $this->cpmw_supported_networks();
+        $all_tokens = $this->cpmw_add_tokens();
+        $hex_network = $allnetworks[$get_network];
+
+        return [
+            'contract_address' => isset($all_tokens[$get_network][$currencySymbol]) ? array(hexdec($get_network) => $all_tokens[$get_network][$currencySymbol]) : [],
+            'active_network' => array($get_network => $hex_network),
+            'decimal_networks' => array(hexdec($get_network) => $hex_network),
+
+        ];
+
+    }
 
 
 
