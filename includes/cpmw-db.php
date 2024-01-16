@@ -161,7 +161,11 @@ class CPMW_database
         update_option($this->table_name . '_db_version', $this->version);
     }
 
-   
+    public function drop_table()
+    {
+        global $wpdb;
+        $wpdb->query('DROP TABLE IF EXISTS ' . $this->table_name);
+    }
 }
 
 

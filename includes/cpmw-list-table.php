@@ -117,6 +117,78 @@ function prepare_items()
 
 }
 
+function column_default($item, $column_name)
+{
+    wp_enqueue_style('woocommerce_admin_styles');
+    switch ($column_name) {
+       
+        case 'id':
+            return $item->id;
+        case 'order_id':
+            return '<a href="'.admin_url().'post.php?post='.$item->order_id.'&action=edit">#'.$item->order_id.' '.$item->user_name.'</a>';
+
+        case 'transaction_id':
+            if($item->transaction_id!="false"){
+              if($item->chain_id=='0x61'){
+             return '<a href="https://testnet.bscscan.com/tx/'.$item->transaction_id.'" target="_blank">'.$item->transaction_id.'</a>';
+            }
+            elseif ($item->chain_id=='0x38') {
+                 return '<a href="https://bscscan.com/tx/'.$item->transaction_id.'" target="_blank">'.$item->transaction_id.'</a>';
+            }
+            elseif ($item->chain_id=='0x1') {
+                 return '<a href="https://etherscan.io/tx/' . $item->transaction_id . '" target="_blank">' . $item->transaction_id . '</a>';
+
+            }
+            elseif ($item->chain_id=='0x3') {
+                 return '<a href="https://ropsten.etherscan.io/tx/' . $item->transaction_id . '" target="_blank">' . $item->transaction_id . '</a>';
+
+            }
+            elseif ($item->chain_id=='0x4') {
+                 return '<a href="https://rinkeby.etherscan.io/tx/' . $item->transaction_id . '" target="_blank">' . $item->transaction_id . '</a>';
+
+            }
+         }
+         return $item->status;
+          break;
+
+        case 'sender':
+            return $item->sender;
+
+        case 'chain_name':
+            return $item->chain_name;
+
+        case 'selected_currency':
+            return $item->selected_currency;
+
+        case 'crypto_price':
+            return $item->crypto_price;
+
+        case 'order_price':                            
+            return $item->order_price;
+
+        case 'status':
+            if($item->status=="canceled"){
+            return '<span class="order-status status-cancelled tips"><span>'.ucfirst($item->status).'</span></span>';
+            }
+            elseif($item->status=="completed"){
+            return '<span class="order-status status-completed tips"><span>'.ucfirst($item->status).'</span></span>';
+            }
+            elseif($item->status=="processing"){
+            return '<span class="order-status status-processing tips"><span>'.ucfirst($item->status).'</span></span>';
+            }
+             elseif($item->status=="on-hold"){
+            return '<span class="order-status status-on-hold tips"><span>'.ucfirst($item->status).'</span></span>';
+            }
+            else {
+                return '<span class="order-status status-cancelled tips"><span>'.ucfirst($item->status).'</span></span>';
+            }
+
+        case 'last_updated':
+            return $this->timeAgo($item->last_updated);
+        default:
+            return print_r($item, true); //Show the whole array for troubleshooting purposes
+    }
+}
 
 
 
