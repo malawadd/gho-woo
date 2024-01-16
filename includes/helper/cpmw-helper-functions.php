@@ -97,7 +97,47 @@ trait CPMW_HELPER
     }
 
 //Add custom tokens for networks
-   
+    protected function cpmw_add_tokens()
+    {
+        $tokens = [];
+
+        $tokens['0x1'] = array(
+            'GHO' => '0x40d16fc0246ad3160ccc09b8d0d3a2cd28ae6c2f',
+        );
+        $tokens['0xaa36a7'] = array(
+            'GHO' => '0xc4bF5CbDaBE595361438F8c6a187bDc330539c60',
+        );
+        
+        return $tokens;
+
+    }
+
+    //Add network names here
+    protected function cpmw_get_explorer_url()
+    {
+        $explorer = [];
+        $explorer = array(
+            '0x1' => 'https://etherscan.io/',
+            '0xaa36a7' => 'https://sepolia.etherscan.io/',
+        );
+
+        return $explorer;
+
+    }
+
+    //Add network names here
+    protected function cpmw_supported_networks()
+    {
+        $networks = [];
+        $networks = array(
+            '0x1' => __('Ethereum Mainnet (ERC20)', 'cpmw'),
+            '0xaa36a7' => __('Ethereum Sepolia (Testnet)', 'cpmw'),
+        
+        );
+
+        return $networks;
+
+    }
    
 
 
