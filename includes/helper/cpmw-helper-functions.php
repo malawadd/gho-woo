@@ -209,8 +209,50 @@ trait CPMW_HELPER
 
     }
 
-  
+    //Add network names here
+    protected function cpmw_get_coin_logo($value)
+    {
+        $coin_svg = CPMW_PATH . 'assets/images/' . $value . '.svg';
+        $coin_png = CPMW_PATH . 'assets/images/' . $value . '.png';
+        $coin_svg_img = CPMW_URL . 'assets/images/' . $value . '.svg';
+        $coin_png_img = CPMW_URL . 'assets/images/' . $value . '.png';
+        $image_url = "";
 
-    
+        if (file_exists($coin_svg)) {
+
+            $image_url = $coin_svg_img;
+
+        } else if (file_exists($coin_png)) {
+            $image_url = $coin_png_img;
+        } else {
+            $image_url = CPMW_URL . 'assets/images/default-logo.png';
+        }
+        return $image_url;
+
+    }
+
+    protected function add_error_custom_notice($error_message, $link = true)
+    {
+        // Get Metamask settings link
+        $cpmw_settings = admin_url() . 'admin.php?page=cpmw-metamask-settings';
+        $link_html = (current_user_can('manage_options')) ?
+        '.<a href="' . esc_url($cpmw_settings) . '" target="_blank">' .
+        __("Click here", "cpmw") . '</a>' . __('to open settings', 'cpmw') : "";
+        if (!empty($error_message) && $link) {
+            wc_add_notice('<strong>' . esc_html($error_message) . wp_kses_post($link_html) . '</strong>', 'error');
+            return false;
+        } else {
+            wc_add_notice('<strong>' . esc_html($error_message) . '</strong>', 'error');
+            return false;
+        }
+    }
+    public function cpmwsaveErrorLogs($log_entry)
+    {
+        $settings = get_option('cpmw_settings');
+        if (!isset($settings['enable_debug_log']) || $settings['enable_debug_log'] == "1") {
+            $logger = wc_get_logger();
+            $logger->error($log_entry, array('source' => 'pay_with_metamask'));
+        }
+    }
 
 }
