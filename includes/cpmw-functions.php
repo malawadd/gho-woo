@@ -120,6 +120,25 @@ function cpmw_payment_verify()
 
     
 
+    function cpmw_crypto_compare_api($fiat, $crypto_token)
+    {   
+        $settings_obj = get_option('woocommerce_cpmw_settings');
+        $api = !empty($settings_obj['crypto_compare_key']) ? $settings_obj['crypto_compare_key'] : "";        
+        $transient = get_transient("cpmw_currency" . $crypto_token);
+        if (empty($transient) || $transient === "") {
+            $response = wp_remote_post('https://min-api.cryptocompare.com/data/price?fsym=' . $fiat . '&tsyms=' . $crypto_token . '&api_key='.$api.'', array('timeout' => 120, 'sslverify' => true));
+            if (is_wp_error($response)) {
+                $error_message = $response->get_error_message();
+                return $error_message;
+            }
+            $body = wp_remote_retrieve_body($response);
+            $data_body = json_decode($body);
+            set_transient("cpmw_currency" . $crypto_token, $data_body, 10 * MINUTE_IN_SECONDS);
+            return $data_body;
+        } else {
+            return $transient;
+        }
+    }
 
     function cpmw_openexchangerates_api()
     {
