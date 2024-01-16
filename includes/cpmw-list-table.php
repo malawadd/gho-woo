@@ -190,8 +190,43 @@ function column_default($item, $column_name)
     }
 }
 
+function get_sortable_columns()
+{
+    $sortable_columns = array(
+        'id' => array('id', false),
+    //    'transaction_id' => array('Transaction Id', false),
+        'order_id' => array('order_id', false),
+     //   'sender' => array('Sender', false),
+        'chain_name' => array('chain_name', false),
+        'selected_currency' => array('selected_currency', false),
+        'crypto_price' => array('crypto_price', false),
+        'order_price' => array('order_price', false),
+      //  'status' => array('Status', false),
+        'last_updated' => array('last_updated', false),
+    );
+    return $sortable_columns;
+}
 
+function timeAgo($time_ago)
+{
+    $time_ago = strtotime($time_ago) ? strtotime($time_ago) : $time_ago;
+    $time = time() - $time_ago;
+    switch ($time):
+// seconds
+case $time < 60:
+    return '1 minute ago';
+// minutes
+case $time >= 60 && $time < 3600:
+    return (round($time / 60) == 1) ? '1 minute' : round($time / 60) . ' minutes ago';
+// hours
+case $time >= 3600 && $time < 86400:
+    return (round($time / 3600) == 1) ? '1 hour ago' : round($time / 3600) . ' hours ago';
+// days
+case $time >= 86400:
+    return (round($time / 86400) == 1) ? date_i18n('M j, Y', $time_ago): date_i18n('M j, Y', $time_ago);
 
+    endswitch;
+}
 
 
 
