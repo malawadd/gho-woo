@@ -152,7 +152,120 @@ if (!class_exists('CPMW_CONFIRM_TRANSACTION')) {
             die();
         }
 
-       
+        public static function cpmw_save_transaction()
+        {
+            // Sanitize and retrieve POST data
+            $order_id = isset($_POST['order_id']) ? (int) sanitize_text_field($_POST['order_id']) : 0;
+            $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : "";
+
+            // Verify nonce
+            if (!isset($_POST['nonce']) || !wp_verify_nonce($nonce, 'cpmw_metamask_pay' . $order_id)) {
+                wp_send_json_error('Nonce verification failed');
+            }
+
+            // Initialize objects and retrieve settings
+            $obj = new self();
+            $options_settings = get_option('cpmw_settings');
+
+            // Retrieve sanitized POST data
+            $receiver = isset($_POST['receiver']) ? sanitize_text_field($_POST['receiver']) : '';
+            $selected_network = isset($options_settings['Chain_network']) ? sanitize_text_field($options_settings['Chain_network']) : '';
+            $token_address = isset($_POST['token_address']) ? sanitize_text_field($_POST['token_address']) : '';
+            $signature = isset($_POST['signature']) ? sanitize_text_field($_POST['signature']) : '';
+            $amount = isset($_POST['amount']) ? $_POST['amount'] : '';
+            $amount = $obj->cpmw_format_number($amount);
+
+            // Create transaction data for signature verification
+            $create_tx_req_data = json_encode([
+                'order_id' => $order_id,
+                'selected_network' => $selected_network,
+                'receiver' => strtoupper($receiver),
+                'amount' => str_replace(',', '', $amount),
+                'token_address' => strtoupper($token_address),
+            ]);
+
+            // Verify signature
+            $secret_key = $obj->cpmw_get_secret_key();
+            $get_sign = hash_hmac('sha256', $create_tx_req_data, $secret_key);
+
+            if ($get_sign !== $signature) {
+                wp_send_json_error('Signature verification unsuccessful: Transaction data is invalid.');
+            }
+
+            // Retrieve additional POST data
+            $tx_id = isset($_POST['transaction_id']) ? sanitize_text_field($_POST['transaction_id']) : '';
+            $payment_status_d = isset($_POST['payment_status']) ? sanitize_text_field($_POST['payment_status']) : '';
+            $sender = isset($_POST['sender']) ? sanitize_text_field($_POST['sender']) : '';
+
+            // Initialize database connection
+            $db = new CPMW_database();
+
+            // Retrieve order and related metadata
+            $order = wc_get_order($order_id);
+            $tx_db_id = $order->get_meta('cpmwp_confirmation_id');
+            $saved_receiver = $order->get_meta('cpmw_user_wallet');
+            $saved_amount = $order->get_meta('cpmw_in_crypto');
+            $saved_token_address = $order->get_meta('cpmwp_contract_address');
+            $db_trans_id = $db->check_transaction_id($tx_id);
+
+            // Check for duplicate transactions
+            if (!empty($tx_db_id) || $db_trans_id == true) {
+                $order->update_status('wc-cancelled', __('Order canceled: Transaction already exists.', 'cpmw'));
+                wp_send_json_error('Order canceled: Transaction already exists.');
+            }
+
+            // Check for incorrect information
+            if ($receiver != $saved_receiver || $amount != $saved_amount) {
+                $order->update_status('wc-cancelled', __('Order canceled due to incorrect information.', 'cpmw'));
+                wp_send_json_error('Order canceled due to incorrect information.');
+            }
+
+            // Update order metadata
+            $order->add_meta_data('cpmwp_confirmation_id', $tx_id);
+            $order->save_meta_data();
+
+            // Prepare transaction data for response signature
+            $pass_tx_req_data = json_encode([
+                'order_id' => $order_id,
+                'selected_network' => $selected_network,
+                'receiver' => strtoupper($saved_receiver),
+                'amount' => str_replace(',', '', $saved_amount),
+                'token_address' => strtoupper($saved_token_address),
+                'tx_id' => $tx_id,
+            ]);
+
+            // Generate response signature
+            $response_signature = hash_hmac('sha256', $pass_tx_req_data, $secret_key);
+
+            // Construct transaction information for response
+            $networks = $obj->cpmw_supported_networks();
+            $current_user = wp_get_current_user();
+            $user_name = $current_user->user_firstname . ' ' . $current_user->user_lastname;
+            $transaction = [
+                'order_id' => $order_id,
+                'chain_id' => $selected_network,
+                'order_price' => get_woocommerce_currency_symbol() . $order->get_total(),
+                'user_name' => $user_name,
+                'crypto_price' => $order->get_meta('cpmw_in_crypto') . ' ' . $order->get_meta('cpmw_currency_symbol'),
+                'selected_currency' => $order->get_meta('cpmw_currency_symbol'),
+                'chain_name' => $networks[$selected_network],
+                'status' => $order->get_status(),
+                'sender' => $sender,
+                'transaction_id' => !empty($tx_id) ? $tx_id : 'false',
+            ];
+
+            // Insert transaction data into the database
+            $rs = $db->cpmw_insert_data($transaction);
+
+            // Send response with signature
+            if ($rs) {
+                echo wp_send_json_success(['signature' => $response_signature]);
+            }
+
+            // End script execution
+            die();
+        }
+
         //Cancel Order
         public static function cpmw_cancel_order()
         {
