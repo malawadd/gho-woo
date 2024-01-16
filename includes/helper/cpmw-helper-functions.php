@@ -158,7 +158,56 @@ trait CPMW_HELPER
 
     }
 
+    //Add all constant messages
+    protected function cpmw_const_messages()
+    {
+        $messages = "";
 
+        $messages = array(
+            // Checkout&validate fields static messages start here
+            'metamask_address' => __('Please enter your  Payment address', 'cpmw'),
+            'valid_wallet_address' => __('Please enter valid  Payment address', 'cpmw'),
+            'required_fiat_key' => __('Please enter price conversion API key', 'cpmw'),
+            'valid_fiat_key' => __('Please enter valid price conversion API key', 'cpmw'),
+            'required_currency' => __('Please select a currency', 'cpmw'),
+            'required_network_check' => __('Please select a payment network', 'cpmw'),
+            'payment_network' => __('Select Payment Network', 'cpmw'),
+            'switch_network_msg' => __('Please switch to the network below inside your wallet to complete this payment.', 'cpmw'),
+            'connected_to' => __('Connected to', 'cpmw'),
+            'disconnect' => __('Disconnect Wallet', 'cpmw'),
+            'wallet' => __('Wallet', 'cpmw'),
+            'network' => __('Network', 'cpmw'),
+            'insufficent' => __('Insufficient balance in your wallet for this order. Try different network, coin, or wallet.', 'cpmw'),
+            'payment_notice' => __('Please proceed with the payment below.', 'cpmw'),
+            'notice_msg' => __('Please dont change the payment amount in your wallet, it could lead to order failure.', 'cpmw'),
+            'payment_notice_msg' => __('Please wait while we check your transaction confirmation on the block explorer. Do not change the gas fee until the transaction is complete to avoid order failure.', 'cpmw'),
+            'cancel_order' => __('If you want to pay with a different cryptocurrency, or wallet, please', 'cpmw'),
+            'cancel_this_order' => __('cancel this order', 'cpmw'),
+            'create_new_one' => __('and create a new one.', 'cpmw'),
+            'to_complete' => __('to complete this order', 'cpmw'),
+            'through' => __('through ', 'cpmw'),
+            'processing' => __('Processing', 'cpmw'),
+            'connected' => __('Connected', 'cpmw'),
+            'not_connected' => __('Not Connected', 'cpmw'),
+            'order_price' => __('Order price: ', 'cpmw'),
+            'pay_with' => __('Please pay', 'cpmw'),
+            'payment_status' => __('Payment Status', 'cpmw'),
+            'in_process' => __('In Process...', 'cpmw'),
+            'pending' => __('Pending', 'cpmw'),
+            'failed' => __('Failed', 'cpmw'),
+            'completed' => __('Completed', 'cpmw'),
+            'check_in_explorer' => __('Check in explorer', 'cpmw'),
+            'rejected_msg' => __('Your payment has been rejected. Please try to make payment again.', 'cpmw'),
+            'confirmed_payments_msg' => __('Thank you for making the payment. Your transaction has been confirmed by the explorer.', 'cpmw'),
+            'connect_wallet' => __('Connect Wallet', 'cpmw'),
+            'select_network' => __('Payment Network', 'cpmw'),
+            'select_currency' => __('Select a Currency', 'cpmw'),
+            'select_cryptocurrency' => __('Select Cryptocurrency..', 'cpmw'),
+
+        );
+        return $messages;
+
+    }
 
   
 
