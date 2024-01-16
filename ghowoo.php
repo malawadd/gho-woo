@@ -3,16 +3,19 @@
  * Plugin Name:GhoWoo 
  * Description:Use MataMask payment gateway for WooCommerce store and let customers pay with ETH and GHO.
  * Author:LFGHO HACKTHON
- * Author URI:https://ethglobal.com/
- * Version: 2.0.0
+ * Author URI:https://github.com/malawadd/gho-woo
+ * Version: 0.1.0
  * License: GPL2
  * Text Domain: gho
  * Domain Path: /languages
-  * Update URI: https://ethglobal.com/showcase/gho-woo-vnqje
+ * Update URI: https://ethglobal.com/showcase/gho-woo-vnqje
 * Plugin URI: https://ethglobal.com/showcase/gho-woo-vnqje
- *
  * @package Gho-Woo
  */
+
+
+
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -20,6 +23,7 @@ define('CPMW_VERSION', '1.5.1');
 define('CPMW_FILE', __FILE__);
 define('CPMW_PATH', plugin_dir_path(CPMW_FILE));
 define('CPMW_URL', plugin_dir_url(CPMW_FILE));
+
 
 /***  */
 if (!class_exists('cpmw_metamask_pay')) {
@@ -178,8 +182,8 @@ if (!class_exists('cpmw_metamask_pay')) {
 }
         }
 
-
-public static function activate()
+        // set settings on plugin activation
+        public static function activate()
         {
             require_once CPMW_PATH . 'includes/db/cpmw-db.php';
             update_option('cpmw-v', CPMW_VERSION);
@@ -199,3 +203,82 @@ public static function activate()
             delete_option('cpmw-already-rated');
 
         }
+        /*
+        |--------------------------------------------------------------------------
+        |  Check if plugin is just updated from older version to new
+        |--------------------------------------------------------------------------
+         */
+        public function cpmw_plugin_version_verify()
+        {
+            $CPMW_VERSION = get_option('CPMW_FREE_VERSION');
+
+            if (!isset($CPMW_VERSION) || version_compare($CPMW_VERSION, CPMW_VERSION, '<')) {
+                if (!get_option('wp_cpmw_transaction_db_version')) {
+                    $this->activate();
+                }
+                if (isset($CPMW_VERSION) && empty(get_option('cpmw_migarte_settings'))) {
+                    $this->cpmw_migrate_settings();
+                    update_option('cpmw_migarte_settings', 'migrated');
+                }
+
+                update_option('CPMW_FREE_VERSION', CPMW_VERSION);
+
+            }
+
+        }
+
+        // Migrate woocommerce settings to codestar
+        protected function cpmw_migrate_settings()
+        {
+            $woocommerce_settings = get_option('woocommerce_cpmw_settings');
+            $codestar_options = get_option('cpmw_settings');
+            if (!empty($woocommerce_settings)) {
+                $codestar_options['user_wallet'] = $woocommerce_settings['user_wallet'];
+                $codestar_options['currency_conversion_api'] = $woocommerce_settings['currency_conversion_api'];
+                $codestar_options['crypto_compare_key'] = $woocommerce_settings['crypto_compare_key'];
+                $codestar_options['openexchangerates_key'] = $woocommerce_settings['openexchangerates_key'];
+                $codestar_options['Chain_network'] = $woocommerce_settings['Chain_network'];
+                $codestar_options['eth_select_currency'] = $woocommerce_settings['eth_select_currency'];
+                $codestar_options['user_wallet'] = $woocommerce_settings['user_wallet'];
+                $codestar_options['bnb_select_currency'] = $woocommerce_settings['bnb_select_currency'];
+                $codestar_options['payment_status'] = $woocommerce_settings['payment_status'];
+                $codestar_options['payment_msg'] = $woocommerce_settings['payment_msg'];
+                $codestar_options['confirm_msg'] = $woocommerce_settings['confirm_msg'];
+                $codestar_options['payment_process_msg'] = $woocommerce_settings['payment_process_msg'];
+                $codestar_options['rejected_message'] = $woocommerce_settings['rejected_message'];
+                update_option('cpmw_settings', $codestar_options);
+            }
+
+        }
+        /*
+        |--------------------------------------------------------------------------
+        | Load Text domain
+        |--------------------------------------------------------------------------
+         */
+        public function load_text_domain()
+        {
+            load_plugin_textdomain('cpmw', false, basename(dirname(__FILE__)) . '/languages/');
+        }
+        public function woocommerce_gateway_block_support()
+        {
+            if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+                if (!class_exists('CPMWP_metamask_pay')) {
+                    require_once 'includes/blocks/class-payment-gateway-blocks.php';
+                    add_action(
+                        'woocommerce_blocks_payment_method_type_registration',
+                        function (Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry) {
+                            $payment_method_registry->register(new WC_cpmw_Gateway_Blocks_Support());
+                        }
+                    );
+                }
+            }
+        }
+
+    }
+
+}
+/*** cpmw_metamask_pay main class - END */
+
+/*** THANKS - CoolPlugins.net ) */
+$cpmw = cpmw_metamask_pay::get_instance();
+$cpmw->registers();
