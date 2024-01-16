@@ -88,3 +88,31 @@ span#cool-plugins-feedback-form-title {
     height: 40px;
 }
 
+/*
+|----------------------
+|        Colors
+|----------------------
+*/
+#cool-plugins-form-wrapper {
+    padding: 20px;
+    background-color: white;
+    color: black;
+}
+#cool-plugins-deactivate-feedback-dialog-header {
+    padding: 20px;
+    background-color: #7bc6de;
+}
+a.cool-plugins-button:hover {
+    background: #adebff;
+    color: white;
+}
+.cool-plugins-button.button-deactivate,
+.cool-plugins-button.button-deactivate:hover{
+    cursor: initial;
+    background-color: silver;
+}
+
+#cool-plugins-form-wrapper input#cool-plugins-GDPR-data-notice {
+    float: left;
+    margin-top: 4px !important;
+}
