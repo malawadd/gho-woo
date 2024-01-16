@@ -114,6 +114,54 @@ class Cpmw_feedback{
     }
     
 
+    function submit_deactivation_response(){
+        if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], '_cool-plugins_deactivate_feedback_nonce' ) ) {
+			wp_send_json_error();
+		}else{
+            $reason = filter_var($_POST['reason'], FILTER_SANITIZE_STRING);
+            $deactivate_reasons = [
+                'didnt_work_as_expected' => [
+                    'title' => __( 'The plugin didn\'t work as expected', 'cool-plugins' ),
+                    'input_placeholder' => 'What did you expect?',
+                ],
+                'found_a_better_plugin' => [
+                    'title' => __( 'I found a better plugin', 'cool-plugins' ),
+                    'input_placeholder' => __( 'Please share which plugin', 'cool-plugins' ),
+                ],
+                'couldnt_get_the_plugin_to_work' => [
+                    'title' => __( 'The plugin is not working', 'cool-plugins' ),
+                    'input_placeholder' => 'Please share your issue. So we can fix that for other users.',
+                ],
+                'temporary_deactivation' => [
+                    'title' => __( 'It\'s a temporary deactivation', 'cool-plugins' ),
+                    'input_placeholder' => '',
+                ],
+                'other' => [
+                    'title' => __( 'Other', 'cool-plugins' ),
+                    'input_placeholder' => __( 'Please share the reason', 'cool-plugins' ),
+                ],
+            ];
     
+            $deativation_reason = array_key_exists( $reason, $deactivate_reasons ) ? $reason : 'other'; 
+          			
+            $sanitized_message = sanitize_text_field($_POST['message'])==''?'N/A':sanitize_text_field($_POST['message']);
+            $admin_email = sanitize_email(get_option('admin_email'));
+            $site_url = esc_url(site_url());
+			$response = wp_remote_post( $this->feedback_url , [
+                'timeout' => 30,
+                'body' => [
+                    'plugin_version' => $this->plugin_version,
+                    'plugin_name' => $this->plugin_name,
+					'reason' => $deativation_reason,
+					'review' => $sanitized_message,
+					'email'	=>	$admin_email,
+					'domain' => $site_url,
+                ],
+			] );
+			
+            die( json_encode( array('response'=>$response) ) );
+        }
+
+    }
 }
 new Cpmw_feedback;
