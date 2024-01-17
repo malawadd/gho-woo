@@ -14,14 +14,14 @@ class WC_cpmw_Gateway extends WC_Payment_Gateway
         $this->id = 'cpmw';
         $this->icon = CPMW_URL . '/assets/images/metamask.png';
         $this->has_fields = true;
-        $this->method_title = __('MetaMask Pay', 'cpmw');
+        $this->method_title = __('GhoWoo', 'cpmw');
         $this->method_description = __('GhoWoo For WooCommerce', 'cpmw');
 
         // Initialize form fields and settings
         $this->init_form_fields();
         $this->init_settings();
         $this->enabled = $this->get_option('enabled');
-        $this->title = !empty($this->get_option('title')) ? $this->get_option('title') : 'MetaMask Pay';
+        $this->title = !empty($this->get_option('title')) ? $this->get_option('title') : 'GhoWoo';
         $this->description = $this->get_option('custom_description');     
         $this->order_button_text =(isset($optionss['place_order_button']) && !empty($optionss['place_order_button'])) ? $optionss['place_order_button']: __('Pay With Crypto Wallets', 'cpmwp');
         // Add action hooks
@@ -79,7 +79,7 @@ class WC_cpmw_Gateway extends WC_Payment_Gateway
         $this->form_fields = array(
             'enabled' => array(
                 'title' => 'Enable/Disable',
-                'label' => 'Enable MetaMask Pay',
+                'label' => 'Enable GhoWoo',
                 'type' => 'checkbox',
                 'description' => '',
                 'default' => 'yes',
@@ -88,7 +88,7 @@ class WC_cpmw_Gateway extends WC_Payment_Gateway
                 'title' => __('Title', 'cpmw'),
                 'type' => 'text',
                 'description' => __('This controls the title for the payment method the customer sees during checkout.', 'cpmw'),
-                'default' => __('Pay With Cryptocurrency','cpmw'),
+                'default' => __('Pay With GHO','cpmw'),
                 'desc_tip' => false,
             ),
             'custom_description' => array(
